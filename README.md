@@ -9,3 +9,8 @@ This is a header-only implementation of:
 * Fibonacci Queue: a priority queue based on Fibonacci heap. This is basically a Fibonacci heap with an added fast store for retrieving nodes, and decrease their key as needed. Useful for search algorithms (e.g. Dijkstra, heuristic, ...).
 
 The heap and queues are targeted at projects that are relunctant to rely on Boost for a simple Fibonacci heap or queue.
+
+Compile test exe with
+```
+g++ -g -std=c++11 test_fiboheap.cc -o tf
+```
