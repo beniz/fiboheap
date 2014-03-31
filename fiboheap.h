@@ -34,7 +34,7 @@ class FibHeap
   {
   public:
     FibNode(T k, void *pl)
-      :key(k),mark(false),p(NULL),left(NULL),right(NULL),child(NULL),degree(-1),payload(pl)
+      :key(k),mark(false),p(nullptr),left(nullptr),right(nullptr),child(nullptr),degree(-1),payload(pl)
     {
     };
     
@@ -53,7 +53,7 @@ class FibHeap
   }; // end FibNode
 
   FibHeap()
-    :n(0),min(NULL)
+    :n(0),min(nullptr)
     {
     };
 
@@ -113,13 +113,13 @@ class FibHeap
     // 1
     x->degree = 0;
     // 2
-    x->p = NULL;
+    x->p = nullptr;
     // 3
-    x->child = NULL;
+    x->child = nullptr;
     // 4
     x->mark = false;
     // 5
-    if ( min == NULL)
+    if ( min == nullptr)
       {
 	// 6, 7
 	min = x->left = x->right = x;
@@ -167,7 +167,7 @@ class FibHeap
     // 2
     H->min = H1->min;
     // 3
-    if ( H->min != NULL && H2->min != NULL )
+    if ( H->min != nullptr && H2->min != nullptr )
       {
 	H->min->right->left = H2->min->left;
 	H2->min->left->right = H->min->right;
@@ -175,7 +175,7 @@ class FibHeap
 	H2->min->left = H->min;
       }
     // 4
-    if ( H1->min == NULL || ( H2->min != NULL && H2->min->key < H1->min->key ) )
+    if ( H1->min == nullptr || ( H2->min != nullptr && H2->min->key < H1->min->key ) )
       {
 	// 5
 	H->min = H2->min;
@@ -209,11 +209,11 @@ class FibHeap
     // 1
     z = min;
     // 2
-    if ( z != NULL )
+    if ( z != nullptr )
       {
 	// 3
 	x = z->child;
-	if ( x != NULL )
+	if ( x != nullptr )
 	  {
 	    childList = new FibNode*[z->degree];
 	    next = x;
@@ -231,7 +231,7 @@ class FibHeap
 		min->left = x;
 		x->right = min;
 		// 5
-		x->p = NULL;
+		x->p = nullptr;
 	      }
 	    delete [] childList;
 	  }
@@ -242,7 +242,7 @@ class FibHeap
 	if ( z == z->right )
 	  {
 	    // 8
-	    min = NULL;
+	    min = nullptr;
 	  }
 	else
 	  {
@@ -294,12 +294,8 @@ class FibHeap
     
     // 1
     A = new FibNode*[max_degree+2]; // plus two both for indexing to max degree and so A[max_degree+1] == NIL
-    // 2
-    for ( int i = 0; i < max_degree+2; i++ )
-      {
-	// 3
-	A[i] = NULL; //TODO: init at array creation.
-      }
+    // 2, 3
+    std::fill_n(A, max_degree+2, nullptr);
     // 4
     w = min;
     rootSize = 0;
@@ -323,7 +319,7 @@ class FibHeap
 	// 6
 	d = x->degree;
 	// 7
-	while ( A[d] != NULL )
+	while ( A[d] != nullptr )
 	  {
 	    // 8
 	    y = A[d];
@@ -338,7 +334,7 @@ class FibHeap
 	    // 11
 	    fib_heap_link(y,x);
 	    // 12
-	    A[d] = NULL;
+	    A[d] = nullptr;
 	    // 13
 	    d++;
 	  }
@@ -347,15 +343,15 @@ class FibHeap
       }
     delete [] rootList;
     // 15
-    min = NULL;
+    min = nullptr;
     // 16
     for ( int i = 0; i < max_degree+2; i++ )
       {
 	// 17
-	if ( A[i] != NULL )
+	if ( A[i] != nullptr )
 	  {
 	    // 18
-	    if ( min == NULL )
+	    if ( min == nullptr )
 	      {
 		// 19, 20
 		min = A[i]->left = A[i]->right = A[i];
@@ -391,7 +387,7 @@ class FibHeap
     y->left->right = y->right;
     y->right->left = y->left;
     // 2
-    if ( x->child != NULL )
+    if ( x->child != nullptr )
       {
 	x->child->left->right = y;
 	y->left = x->child->left;
@@ -439,7 +435,7 @@ class FibHeap
     // 4
     y = x->p;
     // 5
-    if ( y != NULL && x->key < y->key )
+    if ( y != nullptr && x->key < y->key )
       {
 	// 6
 	cut(x,y);
@@ -466,7 +462,7 @@ class FibHeap
     // 1
     if ( x->right == x )
       {
-	y->child = NULL;
+	y->child = nullptr;
       }
     else
       {
@@ -484,7 +480,7 @@ class FibHeap
     min->right = x;
     x->left = min;
     // 3
-    x->p = NULL;
+    x->p = nullptr;
     // 4
     x->mark = false;
   }
@@ -505,7 +501,7 @@ class FibHeap
     // 1
     z = y->p;
     // 2
-    if ( z != NULL )
+    if ( z != nullptr )
       {
 	// 3
 	if ( y->mark == false )
@@ -569,7 +565,7 @@ class FibHeap
 
   FibNode* push(T k)
   {
-    return push(k,NULL);
+    return push(k,nullptr);
   }
 
   unsigned int size()
