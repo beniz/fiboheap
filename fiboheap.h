@@ -36,11 +36,11 @@ class FibHeap
     FibNode(T k, void *pl)
       :key(k),mark(false),p(nullptr),left(nullptr),right(nullptr),child(nullptr),degree(-1),payload(pl)
     {
-    };
+    }
     
     ~FibNode()
       {
-      };
+      }
 
     T key;
     bool mark;
@@ -55,13 +55,13 @@ class FibHeap
   FibHeap()
     :n(0),min(nullptr)
     {
-    };
+    }
 
   ~FibHeap()
     {
       // delete all nodes.
       delete_fibnodes(min);
-    };
+    }
 
   void delete_fibnodes(FibNode *x)
   {
