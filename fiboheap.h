@@ -293,7 +293,7 @@ class FibHeap
     FibNode** A, ** rootList;
     // Max degree <= log base golden ratio of n
     int d, rootSize;
-    int max_degree = floor(log(static_cast<double>(n))/log(static_cast<double>(1 + sqrt(static_cast<double>(5)))/2));
+    int max_degree = static_cast<int>(floor(log(static_cast<double>(n))/log(static_cast<double>(1 + sqrt(static_cast<double>(5)))/2)));
     
     // 1
     A = new FibNode*[max_degree+2]; // plus two both for indexing to max degree and so A[max_degree+1] == NIL
