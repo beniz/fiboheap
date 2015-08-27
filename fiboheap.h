@@ -67,11 +67,6 @@ class FibHeap
   {
     if (!x)
       return;
-    if (x->left == x->right && x->left == x)
-      {
-	delete x;
-	return;
-      }
     
     FibNode *cur = x;
     while(true)
