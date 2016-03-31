@@ -27,6 +27,7 @@
 
 #include "fiboheap.h"
 #include <unordered_map>
+#include <algorithm>
 
 template<class T>
 class FibQueue : public FibHeap<T>
@@ -83,8 +84,13 @@ class FibQueue : public FibHeap<T>
     typename FibHeap<T>::FibNode *x = FibHeap<T>::extract_min();
     if (!x)
       return; // should not happen.
-    typename std::unordered_map<T,typename FibHeap<T>::FibNode*>::iterator mit = find(x->key);
-    if (mit != fstore.end())
+    auto range = fstore.equal_range(x->key);
+    auto mit = std::find_if(range.first, range.second,
+                            [x](const std::pair<T,typename FibHeap<T>::FibNode*> &ele){
+                                return ele.second == x;
+                            }
+    );
+    if (mit != range.second)
       fstore.erase(mit);
     else std::cerr << "[Error]: key " << x->key << " cannot be found in FiboQueue fast store\n";
     delete x;
