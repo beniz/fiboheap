@@ -5,7 +5,7 @@ using namespace std;
 // constructors
 	template<class T> FibQueue<T>::FibQueue() : FibHeap<T>() {}
 // destructor
-	template<class T> FibQueue<T>::~FibQueue() {}
+	template<class T> FibQueue<T>::~FibQueue() noexcept {}
 // accessors
 	template<class T> auto FibQueue<T>::find(T k) { return fstore.find(k); }
 	template<class T> typename FibHeap<T>::FibNode* FibQueue<T>::findNode(T k) { return find(k)->second; }

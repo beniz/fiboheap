@@ -6,7 +6,7 @@ using namespace std;
 	// constructors
 		template<class T> FibHeap<T>::FibHeap() : n(0), min(nullptr) {}
 	// destructor
-		template<class T> FibHeap<T>::~FibHeap() { delete_fibnodes(min); }
+		template<class T> FibHeap<T>::~FibHeap() noexcept { delete_fibnodes(min); }
 	// getters
 		template<class T> bool FibHeap<T>::empty() const noexcept { return n == 0; }
 		template<class T> size_t FibHeap<T>::size() const noexcept { return n; }
@@ -166,11 +166,9 @@ using namespace std;
 			return;
 		FibNode* cur = x;
 		while(true) {
-			/*
-			 * cerr << "cur: " << cur << endl << "x: " << x << endl;
-			 */
+			// cerr << "cur: " << cur << endl << "x: " << x << endl;
 			if(cur->left && cur->left != x) {
-				// cerr << "cur left: " << cur->left << endl;
+				// cerr << "\tcur left: " << cur->left << endl;
 				FibNode* tmp = cur;
 				cur = cur->left;
 				if(tmp->child)

@@ -38,7 +38,7 @@ template<class T> class FibQueue : public FibHeap<T> {
 			// constructors
 				FibQueue();
 			// destructor
-				~FibQueue();
+				~FibQueue() noexcept;
 			// accessors
 				auto find(T k);
 				typename FibHeap<T>::FibNode* findNode(T k);

@@ -38,7 +38,7 @@ template<class T>class FibHeap {
 					void* payload;
 				/* members */
 					FibNode(T k, void* pl) : key(k), mark(false), p(nullptr), left(nullptr), right(nullptr), child(nullptr), degree(-1), payload(pl) {}
-					~FibNode() {}
+					~FibNode() noexcept {}
 			};
 			friend class FibNode;
 		private:
@@ -49,7 +49,7 @@ template<class T>class FibHeap {
 			// constructors
 				FibHeap();
 			// destructor
-				~FibHeap();
+				~FibHeap() noexcept;
 			// getters
 				bool empty() const noexcept;
 				size_t size() const noexcept;
