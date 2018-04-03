@@ -18,19 +18,30 @@
 
 #ifndef FIBOHEAP_H
 #define FIBOHEAP_H
-
+#include <array>
 #include <cstddef>
 #include <math.h>
 #include <limits>
 #include <iostream>
 
-template<class T> class FibHeap {
+template<class T>class FibHeap {
 	/* attributes */
+		public:
+			struct FibNode {
+				/* attributes */
+					T key;
+					bool mark;
+					FibNode* p, left, right, child;
+					int degree;
+					void* payload;
+				/* members */
+					FibNode(T k, void* pl) : key(k), mark(false), p(nullptr), left(nullptr), right(nullptr), child(nullptr), degree(-1), payload(pl) {}
+					~FibNode() {}
+			};
+			friend class FibNode;
 		private:
 			size_t n;
 			FibNode* min;
-			// change to struct
-			class FibNode;
 	/* members */
 		public:
 			// constructors
@@ -38,8 +49,8 @@ template<class T> class FibHeap {
 			// destructor
 				~FibHeap();
 			// getters
-				bool empty();
-				size_t size();
+				bool empty() const noexcept;
+				size_t size() const noexcept;
 			// accessors
 				FibNode* topNode();
 				T top();

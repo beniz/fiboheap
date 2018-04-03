@@ -2,46 +2,32 @@
 
 using namespace std;
 
-// nested class
-	FibHeap::FibNode {
-		public:
-			/* attributes */
-				T key;
-				bool mark;
-				FibNode* p, left, right, child;
-				int degree;
-				void* payload;
-			/* members */
-				FibNode(T k, void* pl) : key(k), mark(false), p(nullptr), left(nullptr), right(nullptr), child(nullptr), degree(-1), payload(pl) {}
-				~FibNode() {}
-	};
 // public
 	// constructors
-		FibHeap::FibHeap() : n(0), min(nullptr) {}
+		template<class T> FibHeap<T>::FibHeap() : n(0), min(nullptr) {}
 	// destructor
-		FibHeap::~FibHeap() { delete_fibnodes(min); }
+		template<class T> FibHeap<T>::~FibHeap() { delete_fibnodes(min); }
 	// getters
-		FibHeap::empty() const { return n == 0; }
-		FibHeap::size() const { return n; }
+		template<class T> bool FibHeap<T>::empty() const noexcept { return n == 0; }
+		template<class T> size_t FibHeap<T>::size() const noexcept { return n; }
 	// accessors
-		FibHeap::topNode() { return minimum(); }
-		FibHeap::top() { return minimum()->key; }
-		FibHeap::minimum() { return min; }
-		FibHeap::extract_min() {
+		template<class T> typename FibHeap<T>::FibNode* FibHeap<T>::topNode() { return minimum(); }
+		template<class T> T FibHeap<T>::top() { return minimum()->key; }
+		template<class T> typename FibHeap<T>::FibNode* FibHeap<T>::minimum() { return min; }
+		template<class T> typename FibHeap<T>::FibNode* FibHeap<T>::extract_min() {
 			FibNode* z, x, next;
-			FibNode** childList; // std::array
 
 			z = min;
 			if(z != nullptr) {
 				x = z->child;
 				if(x != nullptr) {
-					childList = new FibNode*[z->degree];
+					array<FibNode*, z->degree> childList;
 					next = x;
-					for(int i = 0; i < (int)z->degree; ++i) {
-						childList[i] = next;
+					for(auto& element : childList) {
+						element = next;
 						next = next->right;
 					}
-					for(int i = 0; i < (int)z->degree; ++i) {
+					for(int i = 0; i < z->degree; ++i) {
 						min->left->right = x = childList[i];
 						x->left = min->left;
 						min->left = x;
@@ -63,14 +49,14 @@ using namespace std;
 			return z;
 		}
 	// modifiers
-		FibHeap::pop() {
+		template<class T> void FibHeap<T>::pop() {
 			if(empty())
 				return;
 			FibNode* x = extract_min();
 			if(x)
 				delete x;
 		}
-		FibHeap::insert(FibNode* x) {
+		template<class T> void FibHeap<T>::insert(FibNode* x) {
 			x->degree = 0;
 			x->child = x->p = nullptr;
 			x->mark = false;
@@ -86,7 +72,7 @@ using namespace std;
 			}
 			++n;
 		}
-		FibHeap::union_fibheap(FibHeap* H1, FibHeap* H2) {
+		template<class T> typename FibHeap<T>::FibHeap* FibHeap<T>::union_fibheap(FibHeap* H1, FibHeap* H2) {
 			FibHeap* H = new FibHeap();
 			H->min = H1->min;
 			if(H->min != nullptr && H2->min != nullptr) {
@@ -100,7 +86,7 @@ using namespace std;
 			H->n = H1->n + H2->n;
 			return H;
 		}
-		FibHeap::cut(FibNode* x, FibNode* y) {
+		template<class T> void FibHeap<T>::cut(FibNode* x, FibNode* y) {
 			if(x->right == x)
 				y->child = nullptr;
 			else {
@@ -117,7 +103,7 @@ using namespace std;
 			x->p = nullptr;
 			x->mark = false;
 		}
-		FibHeap::cascading_cut(FibNode* y) {
+		template<class T> void FibHeap<T>::cascading_cut(FibNode* y) {
 			FibNode* z;
 			z = y->p;
 			if(z != nullptr) {
@@ -129,12 +115,12 @@ using namespace std;
 				}
 			}
 		}
-		FibHeap::remove_fibnode(FibNode* x) {
+		template<class T> void FibHeap<T>::remove_fibnode(FibNode* x) {
 			decrease_key(x, numeric_limits<T>::min());
 			FibNode* fn = extract_min();
 			delete fn;
 		}
-		FibHeap::fib_heap_link(FibNode* y, FibNode* x) {
+		template<class T> void FibHeap<T>::fib_heap_link(FibNode* y, FibNode* x) {
 			y->left->right = y->right;
 			y->right->left = y->left;
 			if(x->child != nullptr) {
@@ -149,13 +135,13 @@ using namespace std;
 			++x->degree;
 			y->mark = false;
 		}
-		FibHeap::push(T k, void* pl) {
+		template<class T> typename FibHeap<T>::FibNode* FibHeap<T>::push(T k, void* pl) {
 			FibNode* x = new FibNode(k, pl);
 			insert(x);
 			return x;
 		}
-		FibHeap::push(T k) { return push(k, nullptr); }
-		FibHeap::decrease_key(FibNode* x, int k) {
+		template<class T> typename FibHeap<T>::FibNode* FibHeap<T>::push(T k) { return push(k, nullptr); }
+		template<class T> void FibHeap<T>::decrease_key(FibNode* x, int k) {
 			FibNode* y;
 			if(x->key < k)
 				return; // error("new key is greater than current key");
@@ -169,7 +155,7 @@ using namespace std;
 				min = x;
 		}
 // protected
-	FibHeap::delete_fibnodes(FibNode* x) {
+	template<class T> void FibHeap<T>::delete_fibnodes(FibNode* x) {
 		if(!x)
 			return;
 		FibNode* cur = x;
@@ -194,7 +180,7 @@ using namespace std;
 			}
 		}
 	}
-	FibHeap::consolidate() {
+	template<class T> void FibHeap<T>::consolidate() {
 		FibNode* w, next, x, y;
 		FibNode** A, rootList; // std::array
 		int d, rootSize;
