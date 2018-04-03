@@ -12,7 +12,7 @@ using namespace std;
 		template<class T> size_t FibHeap<T>::size() const noexcept { return n; }
 	// accessors
 		template<class T> typename FibHeap<T>::FibNode* FibHeap<T>::topNode() { return minimum(); }
-		template<class T> T FibHeap<T>::top() { return minimum()->key; }
+		template<class T> T FibHeap<T>::top() const { return minimum()->key; }
 		template<class T> typename FibHeap<T>::FibNode* FibHeap<T>::minimum() { return min; }
 		template<class T> typename FibHeap<T>::FibNode* FibHeap<T>::extract_min() {
 			FibNode* z, x, next;
@@ -28,7 +28,7 @@ using namespace std;
 						next = next->right;
 					}
 					for(int i = 0; i < z->degree; ++i) {
-						min->left->right = x = childList[i];
+						min->left->right = x = childList.at(i);
 						x->left = min->left;
 						min->left = x;
 						x->right = min;
@@ -117,8 +117,7 @@ using namespace std;
 		}
 		template<class T> void FibHeap<T>::remove_fibnode(FibNode* x) {
 			decrease_key(x, numeric_limits<T>::min());
-			FibNode* fn = extract_min();
-			delete fn;
+			delete extract_min();
 		}
 		template<class T> void FibHeap<T>::fib_heap_link(FibNode* y, FibNode* x) {
 			y->left->right = y->right;
@@ -135,12 +134,19 @@ using namespace std;
 			++x->degree;
 			y->mark = false;
 		}
-		template<class T> typename FibHeap<T>::FibNode* FibHeap<T>::push(T k, void* pl) {
+		template<class T> typename FibHeap<T>::FibNode* FibHeap<T>::push(const T& k, void* pl) {
 			FibNode* x = new FibNode(k, pl);
 			insert(x);
 			return x;
 		}
-		template<class T> typename FibHeap<T>::FibNode* FibHeap<T>::push(T k) { return push(k, nullptr); }
+		template<class T> typename FibHeap<T>::FibNode* FibHeap<T>::push(const T& k) { return push(k, nullptr); }
+		template<class T> typename FibHeap<T>::FibNode* FibHeap<T>::push(T&& k, void* pl) {
+			FibNode* x = new FibNode(k, pl);
+			insert(x);
+			k = nullptr;
+			return x;
+		}
+		template<class T> typename FibHeap<T>::FibNode* FibHeap<T>::push(T&& k) { return push(k, nullptr); }
 		template<class T> void FibHeap<T>::decrease_key(FibNode* x, int k) {
 			FibNode* y;
 			if(x->key < k)
@@ -161,10 +167,9 @@ using namespace std;
 		FibNode* cur = x;
 		while(true) {
 			/*
-			 * cerr << "cur: " << cur << endl;
-			 * cerr << "x: " << x << endl;
+			 * cerr << "cur: " << cur << endl << "x: " << x << endl;
 			 */
-			if (cur->left && cur->left != x) {
+			if(cur->left && cur->left != x) {
 				// cerr << "cur left: " << cur->left << endl;
 				FibNode* tmp = cur;
 				cur = cur->left;
@@ -182,51 +187,55 @@ using namespace std;
 	}
 	template<class T> void FibHeap<T>::consolidate() {
 		FibNode* w, next, x, y;
-		FibNode** A, rootList; // std::array
-		int d, rootSize;
-		int max_degree = static_cast<int>(floor(log(static_cast<double>(n)) / log(static_cast<double>(1 + sqrt(static_cast<double>(5))) / 2)));
+		int d, rootSize, max_degree = static_cast<int>(
+			floor(
+				log(static_cast<double>(n)) / log(0.5 * (1.0 + sqrt(5.0)))
+			) + 2
+		);
 
-		A = new FibNode*[max_degree + 2];
-		fill_n(A, max_degree + 2, nullptr);
-		w = min;
+		vector<FibNode*> A(max_degree);
+		fill_n(A, max_degree, nullptr);
 		rootSize = 0;
-		next = w;
+		next = w = min;
 		do {
 			++rootSize;
 			next = next->right;
 		} while(next != w);
-		rootList = new FibNode*[rootSize];
-		for(int i = 0; i < rootSize; ++i) {
-			rootList[i] = next;
-			next = next->right;
-		}
-		for(int i = 0; i < rootSize; ++i) {
-			w = rootList[i];
-			x = w;
+
+		vector<FibNode*> rootList(rootSize);
+		foreach(rootList.begin(), rootList.end(),
+			[](auto& element) {
+				element = element->right;
+			}
+		);
+
+		for(const auto& element : rootList) {
+			x = w = element;
 			d = x->degree;
-			while(A[d] != nullptr) {
-				y = A[d];
+			while(A.at(d) != nullptr) {
+				y = A.at(d);
 				if(y->key < x->key)
 					x = x + y - (y = x);
 				fib_heap_link(y, x);
-				A[d] = nullptr;
+				A.at(d) = nullptr;
 				++d;
 			}
-			A[d] = x;
+			A.at(d) = x;
 		}
 		delete[] rootList;
+
 		min = nullptr;
-		for(int i = 0; i < max_degree + 2; ++i) {
-			if(A[i] != nullptr) {
+		for(const auto& element : A) {
+			if(element != nullptr) {
 				if(min == nullptr)
-					min = A[i]->left = A[i]->right = A[i];
+					min = element->left = element->right = element;
 				else {
-					min->left->right = A[i];
-					A[i]->left = min->left;
-					min->left = A[i];
-					A[i]->right = min;
-					if(A[i]->key < min->key)
-						min = A[i];
+					min->left->right = element;
+					element->left = min->left;
+					min->left = element;
+					element->right = min;
+					if(element->key < min->key)
+						min = element;
 				}
 			}
 		}

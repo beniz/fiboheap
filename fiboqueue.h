@@ -11,7 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -40,13 +40,15 @@ template<class T> class FibQueue : public FibHeap<T> {
 			// destructor
 				~FibQueue();
 			// accessors
-				typename std::unordered_map<T, typename FibHeap<T>::FibNode*>::iterator find(T k);
+				auto find(T k);
 				typename FibHeap<T>::FibNode* findNode(T k);
 			// modifiers
 				void decrease_key(typename FibHeap<T>::FibNode* x, int k);
 				void pop();
-				typename FibHeap<T>::FibNode* push(T k, void* pl);
-				typename FibHeap<T>::FibNode* push(T k);
+				typename FibHeap<T>::FibNode* push(const T& k, void* pl);
+				typename FibHeap<T>::FibNode* push(const T& k);
+				typename FibHeap<T>::FibNode* push(T&& k, void* pl);
+				typename FibHeap<T>::FibNode* push(T&& k);
 };
 
 #endif

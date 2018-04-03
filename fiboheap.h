@@ -11,7 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -19,10 +19,12 @@
 #ifndef FIBOHEAP_H
 #define FIBOHEAP_H
 #include <array>
+#include <algorithm>
 #include <cstddef>
 #include <math.h>
 #include <limits>
 #include <iostream>
+#include <vector>
 
 template<class T>class FibHeap {
 	/* attributes */
@@ -53,7 +55,7 @@ template<class T>class FibHeap {
 				size_t size() const noexcept;
 			// accessors
 				FibNode* topNode();
-				T top();
+				T top() const;
 				/*
 				 * The minimum node of the heap.
 				 */
@@ -131,8 +133,10 @@ template<class T>class FibHeap {
 				 * 3. y.mark = FALSE
 				 */
 				void fib_heap_link(FibNode* y, FibNode* x);
-				FibNode* push(T k, void* pl);
-				FibNode* push(T k);
+				FibNode* push(const T& k, void* pl);
+				FibNode* push(const T& k);
+				FibNode* push(T&& k, void* pl);
+				FibNode* push(T&& k);
 				/*
 				 * decrease_key(x,k)
 				 * 1. if k > x.key
