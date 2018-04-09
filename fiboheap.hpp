@@ -36,7 +36,7 @@ namespace {
 template<class T> class FibHeap {
 	/* attributes */
 		public:
-			named_types::named_tuple<T(key), bool(mark)> Node2;
+			//named_types::named_tuple<T(key), bool(mark)> Node2;
 			struct Node {
 					T key;
 					bool mark;
@@ -234,7 +234,7 @@ template<class T> class FibHeap {
 				 * set to infinity so that it hits the top of the heap, then easily remove.
 				 */
 				void remove_Node(Node* x) {
-					decrease_key(x, numeric_limits<T>::min());
+					decrease_key(x, std::numeric_limits<T>::min());
 					delete extract_min();
 				}
 				/*
@@ -352,7 +352,7 @@ template<class T> class FibHeap {
 					) + 2
 				);
 
-				vector<Node*> A(max_degree);
+				std::vector<Node*> A(max_degree);
 				fill_n(A, max_degree, nullptr);
 				rootSize = 0;
 				next = w = min;
@@ -361,7 +361,7 @@ template<class T> class FibHeap {
 					next = next->right;
 				} while(next != w);
 
-				vector<Node*> rootList(rootSize);
+				std::vector<Node*> rootList(rootSize);
 				foreach(rootList.begin(), rootList.end(),
 					[](auto& element) {
 						element = element->right;

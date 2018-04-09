@@ -25,7 +25,7 @@
 #ifndef FIBOQUEUE_HPP
 #define FIBOQUEUE_HPP
 
-#include "fiboheap.h"
+#include "fiboheap.hpp"
 #include <unordered_map>
 #include <algorithm>
 
