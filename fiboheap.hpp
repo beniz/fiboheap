@@ -27,12 +27,9 @@
 #include <iostream>
 #include <utility>
 #include <vector>
-/*
-#include "../named_types/includes/named_types/named_tuple.hpp"
-namespace {
-	template <typename T, T... chars>s constexpr named_tag<string_literal<T,chars...>> operator ""_t () { return {}; }
-}
-*/
+
+#include "named_tuple.h"
+
 template<class T> class FibHeap {
 	/* attributes */
 		public:
