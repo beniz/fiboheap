@@ -33,7 +33,12 @@
 template<class T> class FibHeap {
 	/* attributes */
 		public:
-			//named_types::named_tuple<T(key), bool(mark)> Node2;
+			static auto setup = named_tuple::make_named_tuple(
+				NAMED_TUPLE_MEMBER(language, std::string("C++")),
+				NAMED_TUPLE_MEMBER(standard, 17),
+				NAMED_TUPLE_MEMBER(compiler, std::string("clang")),
+				NAMED_TUPLE_MEMBER(version, 5.0)
+			);
 			struct Node {
 					T key;
 					bool mark;
