@@ -26,37 +26,42 @@
 #include <limits>
 #include <iostream>
 #include <utility>
-#include <vector>
 
 #include "named_tuple.h"
 
-template<class T> class FibHeap {
+template<class T>
+class FibHeap {
 	/* attributes */
 		public:
-			static auto setup = named_tuple::make_named_tuple(
-				NAMED_TUPLE_MEMBER(language, std::string("C++")),
-				NAMED_TUPLE_MEMBER(standard, 17),
-				NAMED_TUPLE_MEMBER(compiler, std::string("clang")),
-				NAMED_TUPLE_MEMBER(version, 5.0)
-			);
 			struct Node {
-					T key;
-					bool mark;
-					Node* p, left, right, child;
-					int degree;
-					void* payload;
-					Node() = delete;
-					Node(T k, void* pl) : key(k), mark(false), p(nullptr), left(nullptr), right(nullptr), child(nullptr), degree(-1), payload(pl) {}
-					~Node() noexcept {}
+				T key;
+				bool mark;
+				Node* p, left, right, child;
+				int degree;
+				void* payload; // replace by std::any
+				Node() = delete;
+				Node(T k, void* pl) : key(k), mark(false), p(nullptr), left(nullptr), right(nullptr), child(nullptr), degree(-1), payload(pl) {}
+				~Node() noexcept {}
 			};
-			friend class Node;
+			friend struct Node;
 		private:
 			size_t n;
 			Node* min;
 	/* members */
 		public:
 			// constructors
-				FibHeap() : n(0), min(nullptr) {}
+				FibHeap() : n(0), min(nullptr) {
+					auto node = named_tuple::make_named_tuple(
+						NAMED_TUPLE_MEMBER(key, T),
+						NAMED_TUPLE_MEMBER(mark, bool),
+						NAMED_TUPLE_MEMBER(p, Node*),
+						NAMED_TUPLE_MEMBER(left, Node*),
+						NAMED_TUPLE_MEMBER(right, Node*),
+						NAMED_TUPLE_MEMBER(child, Node*),
+						NAMED_TUPLE_MEMBER(degree, int),
+						NAMED_TUPLE_MEMBER(payload, void*)
+					);
+				}
 				/*
 				Foo(const Foo& other);
 				Foo(Foo&& other) noexcept;
@@ -148,7 +153,7 @@ template<class T> class FibHeap {
 				 *10. 		H.min = x
 				 *11. H.n = H.n + 1
 				 */
-				void insert(Node* x) {
+				Node* insert(Node* x) {
 					x->degree = 0;
 					x->child = x->p = nullptr;
 					x->mark = false;
@@ -163,6 +168,7 @@ template<class T> class FibHeap {
 							min = x;
 					}
 					++n;
+					return x;
 				}
 				/*
 				 * union_fibheap(H1, H2)
@@ -260,17 +266,12 @@ template<class T> class FibHeap {
 					++x->degree;
 					y->mark = false;
 				}
-				Node* push(const T& k, void* pl) {
-					Node* x = new Node(k, pl);
-					insert(x);
-					return x;
-				}
+				Node* push(const T& k, void* pl) { return insert(new Node(k, pl);); }
 				Node* push(const T& k) { return push(k, nullptr); }
 				Node* push(T&& k, void* pl) {
 					Node* x = new Node(k, pl);
-					insert(x);
 					k = nullptr;
-					return x;
+					return insert(x);
 				}
 				Node* push(T&& k) { return push(k, nullptr); }
 				/*
@@ -354,7 +355,7 @@ template<class T> class FibHeap {
 					) + 2
 				);
 
-				std::vector<Node*> A(max_degree);
+				std::array<Node*> A(max_degree);
 				fill_n(A, max_degree, nullptr);
 				rootSize = 0;
 				next = w = min;
@@ -363,7 +364,7 @@ template<class T> class FibHeap {
 					next = next->right;
 				} while(next != w);
 
-				std::vector<Node*> rootList(rootSize);
+				std::array<Node*> rootList(rootSize);
 				foreach(rootList.begin(), rootList.end(),
 					[](auto& element) {
 						element = element->right;

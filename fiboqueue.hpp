@@ -18,7 +18,7 @@
 
 /**
  * This is basically a Fibonacci heap with an added fast store for retrieving
- * nodes, and decrease their key as needed. Useful for search algorithms (e.g.
+ * vertices, and decrease their key as needed. Useful for search algorithms (e.g.
  * Dijstra, heuristic, ...).
  */
 
