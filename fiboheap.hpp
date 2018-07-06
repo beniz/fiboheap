@@ -58,7 +58,7 @@ class FibHeap {
 		public:
 			// constructors
 				FibHeap() : n(0), min(nullptr) {
-					auto node = create_node(1, nullptr);
+					//auto node = create_node(set<map<set<any>::const_iterator, unsigned int>>(), nullptr);
 				}
 				FibHeap(const FibHeap& other) : n(other.n), min(other.min) {}
 				FibHeap(FibHeap&& other) noexcept : n(other.n), min(other.min) { delete_Nodes(other.min); }
@@ -81,21 +81,6 @@ class FibHeap {
 				Node* topNode() { return minimum(); }
 				T top() const { return minimum()->key; }
 				Node* minimum() { return min; }
-				/*
-				 * extract_min
-				 * 1. z = H.min
-				 * 2. if z != NIL
-				 * 3. 	for each child x of z
-				 * 4. 		add x to the root list of H
-				 * 5. 		x.p = NIL
-				 * 6. 	remove z from the root list of H
-				 * 7.		if z == z.right
-				 * 8. 		H.min = NIL
-				 * 9. 	else H.min = z.right
-				 *10. 		CONSOLIDATE(H)
-				 *11. 	H.n = H.n - 1
-				 *12. return z
-				 */
 				Node* extract_min() {
 					Node* z = min;
 
@@ -110,7 +95,7 @@ class FibHeap {
 								}
 							);
 
-							for(unsigned int i = 0; i < z->degree; ++i) {
+							for(auto i = 0; i < z->degree; ++i) {
 								min->left->right = x = childList.at(i);
 								x->left = min->left;
 								min->left = x;
@@ -137,20 +122,6 @@ class FibHeap {
 					if(Node* x = extract_min();  x)
 						delete x;
 				}
-				/*
-				 * insert(x)
-				 * 1. x.degree = 0
-				 * 2. x.p = NIL
-				 * 3. x.child = NIL
-				 * 4. x.mark = FALSE
-				 * 5. if H.min == NIL
-				 * 6. 	create a root list for H containing just x
-				 * 7. 	H.min = x
-				 * 8. else insert x into H's root list
-				 * 9. 	if x.key < H.min.key
-				 *10. 		H.min = x
-				 *11. H.n = H.n + 1
-				 */
 				Node* insert(Node* x) {
 					x->degree = 0;
 					x->child = x->p = nullptr;
@@ -168,21 +139,12 @@ class FibHeap {
 					++n;
 					return x;
 				}
-				/*
-				 * union_fibheap(H1, H2)
-				 * 1. H = MAKE-FIB-HEAP()
-				 * 2. H.min = H1.min
-				 * 3. concatenate the root list of H2 with the root list of H
-				 * 4. if (H1.min == NIL) or (H2.min != NIL and H2.min.key < H1.min.key)
-				 * 5. 	H.min = H2.min
-				 * 6. H.n = H1.n + H2.n
-				 * 7. return H
-				 */
 				static FibHeap* union_fibheap(FibHeap* H1, FibHeap* H2) {
 					FibHeap* H = new FibHeap();
-					if(H->min = H1->min; H->min != nullptr && H2->min != nullptr) {
-						H->min->right->left = H2->min->left;
+					H->min = H1->min;
+					if(H->min != nullptr && H2->min != nullptr) {
 						H2->min->left->right = H->min->right;
+						H->min->right->left = H2->min->left; // error
 						H->min->right = H2->min;
 						H2->min->left = H->min;
 					}
@@ -191,13 +153,6 @@ class FibHeap {
 					H->n = H1->n + H2->n;
 					return H;
 				}
-				/*
-				 * cut(x,y)
-				 * 1. remove x from the child list of y, decrementing y.degree
-				 * 2. add x to the root list of H
-				 * 3. x.p = NIL
-				 * 4. x.mark = FALSE
-				 */
 				void cut(Node* x, Node* y) {
 					if(x->right == x)
 						y->child = nullptr;
@@ -215,15 +170,6 @@ class FibHeap {
 					x->p = nullptr;
 					x->mark = false;
 				}
-				/*
-				 * cascading_cut(y)
-				 * 1. z = y.p
-				 * 2. if z != NIL
-				 * 3. 	if y.mark == FALSE
-				 * 4. 		y.mark = TRUE
-				 * 5. 	else CUT(H,y,z)
-				 * 6. 		CASCADING-CUT(H,z)
-				 */
 				void cascading_cut(Node* y) {
 					if(Node* z = y->p; z != nullptr) {
 						if(!y->mark)
@@ -234,19 +180,10 @@ class FibHeap {
 						}
 					}
 				}
-				/*
-				 * set to infinity so that it hits the top of the heap, then easily remove.
-				 */
 				void remove_Node(Node* x) {
 					decrease_key(x, std::numeric_limits<T>::min());
 					delete extract_min();
 				}
-				/*
-				 * fib_heap_link(y,x)
-				 * 1. remove y from the root list of heap
-				 * 2. make y a child of x, incrementing x.degree
-				 * 3. y.mark = FALSE
-				 */
 				void fib_heap_link(Node* y, Node* x) {
 					y->left->right = y->right;
 					y->right->left = y->left;
@@ -262,26 +199,12 @@ class FibHeap {
 					++x->degree;
 					y->mark = false;
 				}
-				Node* push(const T& k, void* pl) { return insert(new Node(k, pl)); }
-				Node* push(const T& k) { return push(k, nullptr); }
-				Node* push(T&& k, void* pl) {
+				Node* push(const T& k, void* pl = nullptr) { return insert(new Node(k, pl)); }
+				Node* push(T&& k, void* pl = nullptr) {
 					Node* x = new Node(k, pl);
 					k = nullptr;
 					return insert(x);
 				}
-				Node* push(T&& k) { return push(k, nullptr); }
-				/*
-				 * decrease_key(x,k)
-				 * 1. if k > x.key
-				 * 2. 	error "new key is greater than current key"
-				 * 3. x.key = k
-				 * 4. y = x.p
-				 * 5. if y != NIL and x.key < y.key
-				 * 6. 	CUT(H,x,y)
-				 * 7. 	CASCADING-CUT(H,y)
-				 * 8. if x.key < H.min.key
-				 * 9. 	H.min = x
-				 */
 				void decrease_key(Node* x, int k) {
 					try {
 						if(x->key < k)
@@ -322,42 +245,16 @@ class FibHeap {
 					}
 				}
 			}
-			/*
-			 * consolidate
-			 * 1. let A[0 . . D(H.n)] be a new array
-			 * 2. for i = 0 to D(H.n)
-			 * 3. 	A[i] = NIL
-			 * 4. for each node w in the root list of H
-			 * 5. 	x = w
-			 * 6. 	d = x.degree
-			 * 7. 	while A[d] != NIL
-			 * 8. 		y = A[d]
-			 * 9. 		if x.key > y.key
-			 *10.			exchange x with y
-			 *11. 		FIB-HEAP-LINK(H,y,x)
-			 *12. 		A[d] = NIL
-			 *13. 		d = d + 1
-			 *14. 	A[d] = x
-			 *15. H.min = NIL
-			 *16. for i = 0 to D(H.n)
-			 *17. 	if A[i] != NIL
-			 *18. 		if H.min == NIL
-			 *19. 			create a root list for H containing just A[i]
-			 *20. 			H.min = A[i]
-			 *21. 		else insert A[i] into H's root list
-			 *22. 			if A[i].key < H.min.key
-			 *23. 				H.min = A[i]
-			 */
 			void consolidate() {
 				Node* w, *next, *x, *y;
-				int d, rootSize, max_degree = static_cast<int>(
+				int d, rootSize, max_degree = /*constexpr ?*/ static_cast<int>(
 					floor(
 						log(static_cast<double>(n)) / log(0.5 * (1.0 + sqrt(5.0)))
 					) + 2
 				);
 
 				std::vector<Node*> A(max_degree);
-				fill_n(A, max_degree, nullptr);
+				fill(A.begin(), A.end(), nullptr);
 				rootSize = 0;
 				next = w = min;
 				do {
@@ -376,8 +273,11 @@ class FibHeap {
 					x = w = element;
 					d = x->degree;
 					while(A.at(d) != nullptr) {
-						if(y = A.at(d); y->key < x->key)
-							x = x + y - (y = x);
+						y = A.at(d);
+						/*
+						if(y->key < x->key)
+							std::swap(x, y);
+						*/
 						fib_heap_link(y, x);
 						A.at(d) = nullptr;
 						++d;
@@ -395,8 +295,10 @@ class FibHeap {
 							element->left = min->left;
 							min->left = element;
 							element->right = min;
+							/*
 							if(element->key < min->key)
 								min = element;
+							*/
 						}
 					}
 				}
