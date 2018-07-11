@@ -16,60 +16,40 @@
  * License along with this library.
  */
 
-// @todo replace Node* by unique_ptr<Node> and replace Node class by C-style struct
-
 #ifndef FIBOHEAP_HPP
 #define FIBOHEAP_HPP
 
-#include <any>
 #include <array>
 #include <algorithm>
 #include <cstddef>
 #include <cmath>
-#include <exception>
 #include <limits>
 #include <iostream>
 #include <utility>
 #include <vector>
 
-#include "named_tuple.h"
-
 extern "C" {
 	typedef struct c_node {
-		void* key, *payload;
-		bool mark;
-		c_node* p, *left, *right, *child;
-		int degree; // see if it is possible to replace by unsigned int (and climits)
+		void* key = nullptr, *payload = nullptr;
+		bool mark = false;
+		c_node* p = nullptr, *left = nullptr, *right = nullptr, *child = nullptr;
+		int degree = -1; // see if it is possible to replace by unsigned int (and climits)
 	} c_node;
 }
 
 template<class T>
 class FibHeap {
 	/* attributes */
-		public:
-			struct Node;
-			struct Node {
-				T key;
-				bool mark;
-				Node* p; // replace by smart pointers
-				Node* left;
-				Node* right;
-				Node* child;
-				int degree; // see if it is possible to replace by unsigned int (and climits)
-				std::any payload;
-				Node() = delete;
-				Node(T k, std::any pl) : key(k), mark(false), p(nullptr), left(nullptr), right(nullptr), child(nullptr), degree(-1), payload(pl) {}
-				~Node() noexcept {}
-			};
 		private:
 			size_t n;
-			Node* min;
-			c_node c_min; // sizeof(Node) = 136, sizeof(c_node) = 64
+			c_node* min; // sizeof(Node) = 136, sizeof(c_node) = 64
 	/* members */
 		public:
 			// constructors
 				FibHeap() : n(0), min(nullptr) {
-					std::cout << sizeof(Node) << std::endl << sizeof(c_node) << std::endl;
+					int a = -1;
+					push(0, &a);
+					extract_min();
 				}
 				FibHeap(const FibHeap& other) : n(other.n), min(other.min) {}
 				FibHeap(FibHeap&& other) noexcept : n(other.n), min(other.min) { delete_Nodes(other.min); }
@@ -89,15 +69,15 @@ class FibHeap {
 				bool empty() const noexcept { return n == 0; }
 				size_t size() const noexcept { return n; }
 			// accessors
-				Node* topNode() const { return minimum(); }
+				c_node* topNode() const { return minimum(); }
 				T top() const { return minimum()->key; }
-				Node* minimum() const { return min; }
-				Node* extract_min() {
-					Node* z = min;
+				c_node* minimum() const { return min; }
+				c_node* extract_min() {
+					c_node* z = min;
 
-					if(Node* x, *next; z != nullptr) {
+					if(c_node* x, *next; z != nullptr) {
 						if(z->child != nullptr) {
-							std::vector<Node*> childList(z->degree);
+							std::vector<c_node*> childList(z->degree);
 							next = x = z->child;
 
 							for_each(childList.begin(), childList.end(),
@@ -130,10 +110,10 @@ class FibHeap {
 				void pop() {
 					if(empty())
 						return;
-					if(Node* x = extract_min();  x)
+					if(c_node* x = extract_min();  x)
 						delete x;
 				}
-				Node* insert(Node* x) {
+				c_node* insert(c_node* x) {
 					x->degree = 0;
 					x->child = x->p = nullptr;
 					x->mark = false;
@@ -155,7 +135,7 @@ class FibHeap {
 					H->min = H1->min;
 					if(H->min != nullptr && H2->min != nullptr) {
 						H2->min->left->right = H->min->right;
-						H->min->right->left = H2->min->left; // error
+						H->min->right->left = H2->min->left;
 						H->min->right = H2->min;
 						H2->min->left = H->min;
 					}
@@ -164,7 +144,7 @@ class FibHeap {
 					H->n = H1->n + H2->n;
 					return H;
 				}
-				void cut(Node* x, Node* y) {
+				void cut(c_node* x, c_node* y) {
 					if(x->right == x)
 						y->child = nullptr;
 					else {
@@ -181,8 +161,8 @@ class FibHeap {
 					x->p = nullptr;
 					x->mark = false;
 				}
-				void cascading_cut(Node* y) {
-					if(Node* z = y->p; z != nullptr) {
+				void cascading_cut(c_node* y) {
+					if(c_node* z = y->p; z != nullptr) {
 						if(!y->mark)
 							y->mark = true;
 						else {
@@ -191,11 +171,11 @@ class FibHeap {
 						}
 					}
 				}
-				void remove_Node(Node* x) {
+				void remove_c_node(c_node* x) {
 					decrease_key(x, std::numeric_limits<T>::min());
 					delete extract_min();
 				}
-				void fib_heap_link(Node* y, Node* x) {
+				void fib_heap_link(c_node* y, c_node* x) {
 					y->left->right = y->right;
 					y->right->left = y->left;
 					if(x->child != nullptr) {
@@ -210,13 +190,9 @@ class FibHeap {
 					++x->degree;
 					y->mark = false;
 				}
-				Node* push(const T& k, std::any pl = nullptr) { return insert(new Node(k, pl)); }
-				Node* push(T&& k, std::any pl = nullptr) {
-					Node* x = new Node(k, pl);
-					k = nullptr;
-					return insert(x);
-				}
-				void decrease_key(Node* x, int k) {
+				c_node* push(const T& k, void* pl = nullptr) { return insert(new c_node(k, pl)); }
+				c_node* push(T&& k, void* pl = nullptr) { return insert(new c_node{ (void*)k, pl }); }
+				void decrease_key(c_node* x, int k) {
 					try {
 						if(x->key < k)
 							throw std::out_of_range("new key is greater than current key");
@@ -226,7 +202,7 @@ class FibHeap {
 						return;
 					}
 					x->key = k;
-					if(Node* y = x->p; y != nullptr && x->key < y->key) {
+					if(c_node* y = x->p; y != nullptr && x->key < y->key) {
 						cut(x, y);
 						cascading_cut(y);
 					}
@@ -234,15 +210,15 @@ class FibHeap {
 						min = x;
 				}
 		protected:
-			void delete_Nodes(Node* x) {
+			void delete_Nodes(c_node* x) {
 				if(!x)
 					return;
-				Node* cur = x;
+				c_node* cur = x;
 				while(true) {
 					// cerr << "cur: " << cur << endl << "x: " << x << endl;
 					if(cur->left && cur->left != x) {
 						// cerr << "\tcur left: " << cur->left << endl;
-						Node* tmp = cur;
+						c_node* tmp = cur;
 						cur = cur->left;
 						if(tmp->child)
 							delete_Nodes(tmp->child);
@@ -257,23 +233,22 @@ class FibHeap {
 				}
 			}
 			void consolidate() {
-				Node* w, *next, *x, *y;
-				int d, rootSize, max_degree = /*constexpr ?*/ static_cast<int>(
-					floor(
-						log(static_cast<double>(n)) / log(0.5 * (1.0 + sqrt(5.0)))
-					) + 2
-				);
+				if(0 < n)
+					return;
 
-				std::vector<Node*> A(max_degree);
+				c_node* w = nullptr, *next = nullptr, *x = nullptr, *y = nullptr;
+				unsigned int rootSize = 0;
+				auto max_degree = static_cast<int>(floor(log(static_cast<double>(n)) / log(static_cast<double>(1 + sqrt(static_cast<double>(5))) / 2)));
+
+				std::vector<c_node*> A(max_degree);
 				fill(A.begin(), A.end(), nullptr);
-				rootSize = 0;
 				next = w = min;
 				do {
 					++rootSize;
 					next = next->right;
 				} while(next != w);
 
-				std::vector<Node*> rootList(rootSize);
+				std::vector<c_node*> rootList(rootSize);
 				for_each(rootList.begin(), rootList.end(),
 					[](auto& element) {
 						element = element->right;
@@ -282,13 +257,12 @@ class FibHeap {
 
 				for(const auto& element : rootList) {
 					x = w = element;
-					d = x->degree;
+					auto d = x->degree;
+					std::cout << typeid(d).name() << endl;
 					while(A.at(d) != nullptr) {
 						y = A.at(d);
-						/*
 						if(y->key < x->key)
 							std::swap(x, y);
-						*/
 						fib_heap_link(y, x);
 						A.at(d) = nullptr;
 						++d;
@@ -306,10 +280,8 @@ class FibHeap {
 							element->left = min->left;
 							min->left = element;
 							element->right = min;
-							/*
 							if(element->key < min->key)
 								min = element;
-							*/
 						}
 					}
 				}
