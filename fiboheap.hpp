@@ -16,11 +16,12 @@
  * License along with this library.
  */
 
-// @todo replace Node* by unique_ptr<>
+// @todo replace Node* by unique_ptr<Node> and replace Node class by C-style struct
 
 #ifndef FIBOHEAP_HPP
 #define FIBOHEAP_HPP
 
+#include <any>
 #include <array>
 #include <algorithm>
 #include <cstddef>
@@ -32,6 +33,15 @@
 #include <vector>
 
 #include "named_tuple.h"
+
+extern "C" {
+	typedef struct c_node {
+		void* key, *payload;
+		bool mark;
+		c_node* p, *left, *right, *child;
+		int degree; // see if it is possible to replace by unsigned int (and climits)
+	} c_node;
+}
 
 template<class T>
 class FibHeap {
@@ -46,19 +56,20 @@ class FibHeap {
 				Node* right;
 				Node* child;
 				int degree; // see if it is possible to replace by unsigned int (and climits)
-				void* payload; // replace by std::any
+				std::any payload;
 				Node() = delete;
-				Node(T k, void* pl) : key(k), mark(false), p(nullptr), left(nullptr), right(nullptr), child(nullptr), degree(-1), payload(pl) {}
+				Node(T k, std::any pl) : key(k), mark(false), p(nullptr), left(nullptr), right(nullptr), child(nullptr), degree(-1), payload(pl) {}
 				~Node() noexcept {}
 			};
 		private:
 			size_t n;
 			Node* min;
+			c_node c_min; // sizeof(Node) = 136, sizeof(c_node) = 64
 	/* members */
 		public:
 			// constructors
 				FibHeap() : n(0), min(nullptr) {
-					//auto node = create_node(set<map<set<any>::const_iterator, unsigned int>>(), nullptr);
+					std::cout << sizeof(Node) << std::endl << sizeof(c_node) << std::endl;
 				}
 				FibHeap(const FibHeap& other) : n(other.n), min(other.min) {}
 				FibHeap(FibHeap&& other) noexcept : n(other.n), min(other.min) { delete_Nodes(other.min); }
@@ -78,9 +89,9 @@ class FibHeap {
 				bool empty() const noexcept { return n == 0; }
 				size_t size() const noexcept { return n; }
 			// accessors
-				Node* topNode() { return minimum(); }
+				Node* topNode() const { return minimum(); }
 				T top() const { return minimum()->key; }
-				Node* minimum() { return min; }
+				Node* minimum() const { return min; }
 				Node* extract_min() {
 					Node* z = min;
 
@@ -199,8 +210,8 @@ class FibHeap {
 					++x->degree;
 					y->mark = false;
 				}
-				Node* push(const T& k, void* pl = nullptr) { return insert(new Node(k, pl)); }
-				Node* push(T&& k, void* pl = nullptr) {
+				Node* push(const T& k, std::any pl = nullptr) { return insert(new Node(k, pl)); }
+				Node* push(T&& k, std::any pl = nullptr) {
 					Node* x = new Node(k, pl);
 					k = nullptr;
 					return insert(x);
@@ -302,18 +313,6 @@ class FibHeap {
 						}
 					}
 				}
-			}
-			auto create_node(T _key, void* _pl) {
-				return named_tuple::make_named_tuple(
-					NAMED_TUPLE_MEMBER(key, _key),
-					NAMED_TUPLE_MEMBER(mark, false),
-					NAMED_TUPLE_MEMBER(p, nullptr),
-					NAMED_TUPLE_MEMBER(left, nullptr),
-					NAMED_TUPLE_MEMBER(right, nullptr),
-					NAMED_TUPLE_MEMBER(child, nullptr),
-					NAMED_TUPLE_MEMBER(degree, -1),
-					NAMED_TUPLE_MEMBER(payload, _pl)
-				);
 			}
 	};
 
