@@ -24,7 +24,7 @@
 #include <limits>
 #include <iostream>
 
-template<class T>
+template<class T, class Comp>
 class FibHeap
 {
  public:
@@ -52,16 +52,26 @@ class FibHeap
     void *payload;
   }; // end FibNode
 
-  FibHeap()
-    :n(0),min(nullptr)
+  FibHeap() : FibHeap(std::less<T>())
     {
     }
 
+  FibHeap(Comp comp)
+      :n(0), min(nullptr), comp(comp)
+  {
+  }
+
   ~FibHeap()
     {
+      clear();
+    }
+
+  void clear() {
       // delete all nodes.
       delete_fibnodes(min);
-    }
+      min = nullptr;
+      n = 0;
+  }
 
   void delete_fibnodes(FibNode *x)
   {
@@ -130,7 +140,7 @@ class FibHeap
 	min->left = x;
 	x->right = min;
 	// 9
-	if ( x->key < min->key )
+	if ( comp(x->key, min->key) )
 	  {
 	    // 10
 	    min = x;
@@ -173,7 +183,7 @@ class FibHeap
 	H2->min->left = H->min;
       }
     // 4
-    if ( H1->min == nullptr || ( H2->min != nullptr && H2->min->key < H1->min->key ) )
+    if ( H1->min == nullptr || ( H2->min != nullptr && H1->comp(H2->min->key, H1->min->key) ) )
       {
 	// 5
 	H->min = H2->min;
@@ -322,7 +332,7 @@ class FibHeap
 	    // 8
 	    y = A[d];
 	    // 9
-	    if ( x->key > y->key )
+	    if ( comp(y->key, x->key) )
 	      {
 		// 10
 		temp = x;
@@ -362,7 +372,7 @@ class FibHeap
 		min->left = A[i];
 		A[i]->right = min;
 		// 22
-		if ( A[i]->key < min->key )
+		if ( comp(A[i]->key, min->key) )
 		  {
 		    // 23
 		    min = A[i];
@@ -417,12 +427,12 @@ class FibHeap
    * 8. if x.key < H.min.key
    * 9. 	H.min = x
    */
-  void decrease_key( FibNode* x, int k )
+  void decrease_key( FibNode* x, T k )
   {
     FibNode* y;
     
     // 1
-    if ( k > x->key )
+    if ( comp(x->key, k) )
       {
 	// 2
 	// error( "new key is greater than current key" );
@@ -433,7 +443,7 @@ class FibHeap
     // 4
     y = x->p;
     // 5
-    if ( y != nullptr && x->key < y->key )
+    if ( y != nullptr && comp(x->key, y->key) )
       {
 	// 6
 	cut(x,y);
@@ -441,7 +451,7 @@ class FibHeap
 	cascading_cut(y);
       }
     // 8
-    if ( x->key < min->key )
+    if ( comp(x->key, min->key) )
       {
 	// 9
 	min = x;
@@ -573,6 +583,7 @@ class FibHeap
   
   int n;
   FibNode *min;
+  Comp comp;
   
 };
 
