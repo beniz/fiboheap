@@ -11,11 +11,11 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-    
+
 #ifndef FIBOHEAP_H
 #define FIBOHEAP_H
 
@@ -24,7 +24,7 @@
 #include <limits>
 #include <iostream>
 
-template<class T, class Comp>
+template<class T, class Comp = std::less<T>>
 class FibHeap
 {
  public:
@@ -34,10 +34,10 @@ class FibHeap
   {
   public:
     FibNode(T k, void *pl)
-      :key(k),mark(false),p(nullptr),left(nullptr),right(nullptr),child(nullptr),degree(-1),payload(pl)
+      :key(std::move(k)),mark(false),p(nullptr),left(nullptr),right(nullptr),child(nullptr),degree(-1),payload(pl)
     {
     }
-    
+
     ~FibNode()
       {
       }
@@ -77,7 +77,7 @@ class FibHeap
   {
     if (!x)
       return;
-    
+
     FibNode *cur = x;
     while(true)
       {
@@ -101,7 +101,7 @@ class FibHeap
 	  }
       }
   }
-      
+
   /*
    * insert(x)
    * 1. x.degree = 0
@@ -299,7 +299,7 @@ class FibHeap
     // Max degree <= log base golden ratio of n
     int d, rootSize;
     int max_degree = static_cast<int>(floor(log(static_cast<double>(n))/log(static_cast<double>(1 + sqrt(static_cast<double>(5)))/2)));
-    
+
     // 1
     A = new FibNode*[max_degree+2]; // plus two both for indexing to max degree and so A[max_degree+1] == NIL
     // 2, 3
@@ -414,7 +414,7 @@ class FibHeap
     y->mark = false;
   }
 
-  
+
   /*
    * decrease_key(x,k)
    * 1. if k > x.key
@@ -430,7 +430,7 @@ class FibHeap
   void decrease_key( FibNode* x, T k )
   {
     FibNode* y;
-    
+
     // 1
     if ( comp(x->key, k) )
       {
@@ -439,7 +439,7 @@ class FibHeap
 	return;
       }
     // 3
-    x->key = k;
+    x->key = std::move(k);
     // 4
     y = x->p;
     // 5
@@ -505,7 +505,7 @@ class FibHeap
   void cascading_cut( FibNode* y )
   {
     FibNode* z;
-    
+
     // 1
     z = y->p;
     // 2
@@ -536,7 +536,7 @@ class FibHeap
     FibNode *fn = extract_min();
     delete fn;
   }
-  
+
   /*
    * mapping operations to STL-compatible signatures.
    */
@@ -550,7 +550,7 @@ class FibHeap
     return minimum();
   }
 
-  T top()
+  T& top()
   {
     return minimum()->key;
   }
@@ -566,25 +566,25 @@ class FibHeap
 
   FibNode* push(T k, void *pl)
   {
-    FibNode *x = new FibNode(k,pl);
+    FibNode *x = new FibNode(std::move(k),pl);
     insert(x);
     return x;
   }
 
   FibNode* push(T k)
   {
-    return push(k,nullptr);
+    return push(std::move(k),nullptr);
   }
 
   unsigned int size()
   {
     return (unsigned int) n;
   }
-  
+
   int n;
   FibNode *min;
   Comp comp;
-  
+
 };
 
 #endif
