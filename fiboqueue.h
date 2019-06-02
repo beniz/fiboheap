@@ -11,7 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -56,39 +56,39 @@ class FibQueue : public FibHeap<T, Comp>
     KeyNodeIter mit = find(x->key);
     fstore.erase(mit);
     fstore.insert({ k, x });
-    Heap::decrease_key(x,k);
+    Heap::decrease_key(x,std::move(k));
   }
-  
+
   Node* push(T k, void *pl)
   {
-    Node *x = Heap::push(k,pl);
+    Node *x = Heap::push(std::move(k),pl);
     fstore.insert({ k, x });
     return x;
   }
 
   Node* push(T k)
   {
-    return push(k,NULL);
+    return push(std::move(k),NULL);
   }
 
-  KeyNodeIter find(T k)
+  KeyNodeIter find(const T& k)
   {
     KeyNodeIter mit = fstore.find(k);
     return mit;
   }
 
-  int count(T k)
+  int count(const T& k)
   {
       KeyNodeIter mit = fstore.find(k);
       return mit != fstore.end();
   }
 
-  Node* findNode(T k)
+  Node* findNode(const T& k)
   {
     KeyNodeIter mit = find(k);
     return mit->second;
   }
-  
+
   void pop()
   {
     if (Heap::empty())
@@ -112,7 +112,7 @@ class FibQueue : public FibHeap<T, Comp>
       Heap::clear();
       fstore.clear();
   }
-  
+
   std::unordered_multimap<T, Node*> fstore;
 };
 
