@@ -29,64 +29,76 @@
 #include <unordered_map>
 #include <algorithm>
 
-template<class T>
-class FibQueue : public FibHeap<T>
+template<class T, class Comp = std::less<T>>
+class FibQueue : public FibHeap<T, Comp>
 {
  public:
+  using Heap = FibHeap<T, Comp>;
+  using Node = typename Heap::FibNode;
+  using KeyNodeIter = typename std::unordered_map<T, Node*>::iterator;
+
   FibQueue()
-    :FibHeap<T>()
+    : Heap()
     {
     }
+
+  FibQueue(Comp comp)
+      : Heap(comp)
+  {
+  }
 
   ~FibQueue()
     {
     }
 
-  void decrease_key(typename FibHeap<T>::FibNode *x, int k)
+  void decrease_key(Node *x, T k)
   {
-    typename std::unordered_map<T,typename FibHeap<T>::FibNode*>::iterator mit
-      = find(x->key);
+    KeyNodeIter mit = find(x->key);
     fstore.erase(mit);
-    fstore.insert(std::pair<T,typename FibHeap<T>::FibNode*>(k,x));
-    FibHeap<T>::decrease_key(x,k);
+    fstore.insert({ k, x });
+    Heap::decrease_key(x,k);
   }
   
-  typename FibHeap<T>::FibNode* push(T k, void *pl)
+  Node* push(T k, void *pl)
   {
-    typename FibHeap<T>::FibNode *x = FibHeap<T>::push(k,pl);
-    fstore.insert(std::pair<T,typename FibHeap<T>::FibNode*>(k,x));
+    Node *x = Heap::push(k,pl);
+    fstore.insert({ k, x });
     return x;
   }
 
-  typename FibHeap<T>::FibNode* push(T k)
+  Node* push(T k)
   {
     return push(k,NULL);
   }
 
-  typename std::unordered_map<T,typename FibHeap<T>::FibNode*>::iterator find(T k)
+  KeyNodeIter find(T k)
   {
-    typename std::unordered_map<T,typename FibHeap<T>::FibNode*>::iterator mit
-      =fstore.find(k);
+    KeyNodeIter mit = fstore.find(k);
     return mit;
   }
 
-  typename FibHeap<T>::FibNode* findNode(T k)
+  int count(T k)
   {
-    typename std::unordered_map<T,typename FibHeap<T>::FibNode*>::iterator mit
-      = find(k);
-    return (*mit).second;
+      KeyNodeIter mit = fstore.find(k);
+      return mit != fstore.end();
+  }
+
+  Node* findNode(T k)
+  {
+    KeyNodeIter mit = find(k);
+    return mit->second;
   }
   
   void pop()
   {
-    if (FibHeap<T>::empty())
+    if (Heap::empty())
       return;
-    typename FibHeap<T>::FibNode *x = FibHeap<T>::extract_min();
+    Node *x = Heap::extract_min();
     if (!x)
       return; // should not happen.
     auto range = fstore.equal_range(x->key);
     auto mit = std::find_if(range.first, range.second,
-                            [x](const std::pair<T,typename FibHeap<T>::FibNode*> &ele){
+                            [x](const std::pair<T, Node*> &ele){
                                 return ele.second == x;
                             }
     );
@@ -95,8 +107,13 @@ class FibQueue : public FibHeap<T>
     else std::cerr << "[Error]: key " << x->key << " cannot be found in FiboQueue fast store\n";
     delete x;
   }
+
+  void clear() {
+      Heap::clear();
+      fstore.clear();
+  }
   
-  std::unordered_multimap<T,typename FibHeap<T>::FibNode*> fstore;
+  std::unordered_multimap<T, Node*> fstore;
 };
 
 #endif
